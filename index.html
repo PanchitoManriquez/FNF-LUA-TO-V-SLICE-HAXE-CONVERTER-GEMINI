@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Conversor FNF: Psych a V-Slice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Paleta Gamer Neon */
+            --bg-base: #0b0c10;
+            --bg-gradient: linear-gradient(135deg, #0b0c10 0%, #1f2833 100%);
+            --panel-bg: rgba(31, 40, 51, 0.85);
+            --neon-cyan: #66fcf1;
+            --neon-blue: #45a29e;
+            --neon-purple: #c700ff;
+            --neon-pink: #ff007f;
+            --text-main: #e2e8f0;
+            --text-muted: #8b9bb4;
+            --danger: #ff4c4c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-cyan); }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-blue);
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            color: var(--neon-cyan);
+            font-weight: 500;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .controls-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-blue);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 15px rgba(69, 162, 158, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .inputs-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+
+        .input-group {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Contenedor flexible para el input y el botón de borrar */
+        .api-input-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        input[type="password"] {
+            flex-grow: 1;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid var(--neon-blue);
+            background: rgba(11, 12, 16, 0.8);
+            color: #fff;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(102, 252, 241, 0.4);
+        }
+
+        .btn-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #0b0c10;
+            background: var(--neon-cyan);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(102, 252, 241, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            button { width: auto; }
+        }
+
+        button:hover {
+            background: #fff;
+            box-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-blue);
+            transform: translateY(-2px);
+        }
+
+        button:active { transform: translateY(1px); }
+
+        button:disabled {
+            background: var(--text-muted);
+            box-shadow: none;
+            color: #0b0c10;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Botón Quitar API */
+        #clearApiBtn {
+            background: var(--danger);
+            color: #fff;
+            padding: 15px;
+            width: auto;
+            box-shadow: 0 0 10px rgba(255, 76, 76, 0.4);
+        }
+
+        #clearApiBtn:hover {
+            background: #fff;
+            color: var(--danger);
+            box-shadow: 0 0 20px var(--danger);
+        }
+
+        #downloadBtn {
+            background: var(--neon-purple);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(199, 0, 255, 0.4);
+            margin-top: 15px;
+            display: none;
+        }
+
+        #downloadBtn:hover {
+            background: #fff;
+            color: var(--neon-purple);
+            box-shadow: 0 0 20px var(--neon-purple), 0 0 40px var(--neon-pink);
+        }
+
+        .status-indicator {
+            display: none;
+            color: var(--neon-pink);
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+            width: 100%;
+            text-align: center;
+        }
+
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .editor-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-blue);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--neon-blue);
+            padding-bottom: 10px;
+        }
+
+        .panel-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 0 5px rgba(255,255,255,0.3);
+        }
+
+        .badge {
+            background: var(--neon-blue);
+            color: #0b0c10;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-family: 'Fira Code', monospace;
+            font-weight: 700;
+        }
+
+        .upload-area {
+            flex-grow: 1;
+            border: 2px dashed var(--neon-blue);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(11, 12, 16, 0.5);
+            cursor: pointer;
+            position: relative;
+            min-height: 250px;
+            transition: all 0.3s ease;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (min-width: 900px) {
+            .upload-area { min-height: 400px; }
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--neon-cyan);
+            background: rgba(102, 252, 241, 0.1);
+            box-shadow: inset 0 0 20px rgba(102, 252, 241, 0.2);
+        }
+
+        .upload-area input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px var(--neon-cyan));
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+
+        .file-name-display {
+            margin-top: 15px;
+            color: var(--neon-pink);
+            font-weight: 700;
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            word-break: break-all;
+        }
+
+        textarea {
+            width: 100%;
+            flex-grow: 1;
+            min-height: 250px;
+            background: rgba(11, 12, 16, 0.8);
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-blue);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            resize: none;
+            line-height: 1.5;
+        }
+
+        @media (min-width: 900px) {
+            textarea { min-height: 400px; }
+        }
+
+        textarea:focus { outline: none; border-color: var(--neon-cyan); box-shadow: 0 0 10px rgba(102, 252, 241, 0.3); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>[ FNF Script Converter ]</h1>
+        <p class="subtitle">SYS.CORE // PSYCH ENGINE TO V-SLICE // HXC GENERATOR</p>
+    </header>
+
+    <div class="container">
+        <div class="controls-card">
+            <div class="inputs-row">
+                <div class="input-group">
+                    <label for="apiKey">API Key (Gemini Core)</label>
+                    <div class="api-input-container">
+                        <input type="password" id="apiKey" placeholder="> INSERT_API_KEY_HERE">
+                        <button id="clearApiBtn" onclick="quitarApiKey()" title="Borrar API Key Guardada">🗑️</button>
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button id="convertBtn" onclick="procesarArchivo()">Generar código hxc 🚀</button>
+                </div>
+            </div>
+            <div class="status-indicator" id="statusIndicator">Cargando... 🧠</div>
+        </div>
+
+        <div class="editor-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">📂 Psych Engine</span>
+                    <span class="badge">UPLOAD .LUA</span>
+                </div>
+                <div class="upload-area" id="dropZone">
+                    <input type="file" id="fileInput" accept=".lua,.txt">
+                    <div class="upload-icon">📄</div>
+                    <div class="upload-text">
+                        <strong>Toca o arrastra tu archivo .lua aquí</strong>
+                    </div>
+                    <div class="file-name-display" id="fileNameDisplay"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">💾 V-Slice Engine</span>
+                    <span class="badge">OUTPUT (.HXC)</span>
+                </div>
+                <textarea id="outputHxc" readonly>// > Esperando input del usuario...
+// > El código Haxe generado aparecerá en esta terminal.</textarea>
+                <button id="downloadBtn" onclick="descargarHxc()">💾 Descargar Archivo .hxc</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === CARGAR API KEY GUARDADA AL INICIAR ===
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedKey = localStorage.getItem('fnf_gemini_api_key');
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+            }
+        });
+
+        // === FUNCIÓN PARA QUITAR API KEY ===
+        function quitarApiKey() {
+            document.getElementById('apiKey').value = '';
+            localStorage.removeItem('fnf_gemini_api_key');
+            alert("🗑️ API Key eliminada del almacenamiento local.");
+        }
+
+        // === DOCUMENTACIÓN INYECTADA PARA LA IA ===
+        const V_SLICE_DOCS = `
+=========================================
+DOCUMENTACIÓN OFICIAL DE SCRIPTING EN FNF V-SLICE (HSCRIPT / .HXC)
+=========================================
+1. ESTRUCTURA Y SINTAXIS GENERAL
+* V-Slice utiliza HScript (.hxc), sintaxis idéntica a Haxe. Requiere llaves {} y punto y coma (;).
+
+2. IMPORTACIÓN DE CLASES
+import funkin.play.PlayState;
+import flixel.FlxG;
+import flixel.FlxSprite;
+import funkin.paths.Paths;
+
+3. MAPEO DE FUNCIONES
+* onCreate() -> override function onCreate(event:ScriptEvent) { super.onCreate(event); }
+* onUpdate(elapsed) -> override function onUpdate(event:UpdateScriptEvent) { super.onUpdate(event); var elapsed = event.elapsed; }
+* getProperty('boyfriend.x') -> PlayState.instance.boyfriend.x
+* getProperty('health') -> PlayState.instance.health
+* setProperty('camera.zoom', 1.2) -> FlxG.camera.zoom = 1.2;
+* playSound('sound') -> FlxG.sound.play(Paths.sound('sound'));
+* makeLuaSprite y addLuaSprite -> var sprite = new FlxSprite(); sprite.loadGraphic(Paths.image('img')); PlayState.instance.add(sprite);
+        `;
+
+        // === LÓGICA DE LA INTERFAZ ===
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const dropZone = document.getElementById('dropZone');
+
+        // Efectos Drag & Drop visuales para PC
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        // Detectar archivo subido
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                fileNameDisplay.textContent = "> TARGET ACQUIRED: " + this.files[0].name;
+            } else {
+                fileNameDisplay.textContent = "";
+            }
+        });
+
+        // === LÓGICA DE CONVERSIÓN (API GEMINI) ===
+        function procesarArchivo() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const btn = document.getElementById('convertBtn');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const outputHxc = document.getElementById('outputHxc');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            if (!apiKey) {
+                alert("⚠ ERROR: Falta API Key. Ingrésala para continuar.");
+                return;
+            }
+
+            // Guardar la API Key en el navegador para la próxima vez
+            localStorage.setItem('fnf_gemini_api_key', apiKey);
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("⚠ ERROR: No se ha detectado ningún archivo .lua.");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                const inputLua = e.target.result;
+                
+                btn.disabled = true;
+                btn.innerHTML = "PROCESANDO... ⚙️";
+                statusIndicator.style.display = "block";
+                statusIndicator.textContent = "> COMPILANDO CÓDIGO A TRAVÉS DE GEMINI AI...";
+                outputHxc.value = "// > Analizando estructura Lua...\n// > Mapeando funciones...\n// > Por favor, espera.";
+                downloadBtn.style.display = "none";
+
+                const prompt = \`Actúa como un compilador experto de Friday Night Funkin'. Convierte el siguiente script de LUA (Psych Engine) a HScript (.hxc) (V-Slice Engine). Sigue OBLIGATORIAMENTE esta estructura y reglas:
+                \${V_SLICE_DOCS}
+                
+                Instrucciones:
+                1. Envuelve todo en: class SongScript extends funkin.play.song.SongScript { ... }
+                2. Devuelve ÚNICAMENTE el código en Haxe (.hxc). 
+                3. NO uses etiquetas markdown como \`\`\`haxe o \`\`\`. Solo código puro.
+                
+                CÓDIGO LUA A CONVERTIR:
+                \${inputLua}\`;
+
+                const url = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\${apiKey}\`;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        let resultText = data.candidates[0].content.parts[0].text;
+                        resultText = resultText.replace(/\`\`\`haxe/gi, "").replace(/\`\`\`hxc/gi, "").replace(/\`\`\`/g, "").trim();
+                        outputHxc.value = resultText;
+                        
+                        statusIndicator.textContent = "> COMPILACIÓN EXITOSA.";
+                        statusIndicator.style.color = "var(--neon-cyan)";
+                        downloadBtn.style.display = "flex"; 
+                    } else {
+                        outputHxc.value = "// ⚠ ERROR DE API:\n// " + data.error.message;
+                        statusIndicator.textContent = "> COMPILACIÓN FALLIDA.";
+                        statusIndicator.style.color = "var(--danger)";
+                    }
+                } catch (error) {
+                    outputHxc.value = "// ⚠ ERROR DE RED O CONEXIÓN:\n// " + error.message;
+                    statusIndicator.textContent = "> COMPILACIÓN FALLIDA.";
+                    statusIndicator.style.color = "var(--danger)";
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = "Generar código hxc 🚀";
+                    setTimeout(() => { statusIndicator.style.display = "none"; }, 4000);
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        // === LÓGICA DE DESCARGA ===
+        function descargarHxc() {
+            const hxcContent = document.getElementById('outputHxc').value;
+            if (!hxcContent || hxcContent.includes("Esperando input") || hxcContent.includes("⚠ ERROR")) {
+                alert("⚠ ERROR: No hay código válido para exportar.");
+                return;
+            }
+
+            const blob = new Blob([hxcContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const originalFile = fileInput.files[0];
+            let newFileName = "script.hxc";
+            if (originalFile) {
+                newFileName = originalFile.name.replace(/\.[^/.]+$/, "") + ".hxc";
+            }
+
+            const a = document.creat
