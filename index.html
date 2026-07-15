@@ -2,38 +2,337 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Básico FNF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Conversor FNF: Psych a V-Slice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0b0c10;
+            --bg-gradient: linear-gradient(135deg, #0b0c10 0%, #171d24 100%);
+            --panel-bg: #151a21;
+            --neon-cyan: #66fcf1;
+            --neon-blue: #45a29e;
+            --neon-purple: #c700ff;
+            --neon-pink: #ff007f;
+            --text-main: #e2e8f0;
+            --text-muted: #8b9bb4;
+            --success: #4ade80;
+            --danger: #ff4c4c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+        }
+
+        header { text-align: center; margin-bottom: 15px; width: 100%; }
+
+        h1 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px var(--neon-cyan);
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            color: var(--neon-cyan);
+            font-weight: 500;
+        }
+
+        .container { width: 100%; max-width: 1200px; display: flex; flex-direction: column; gap: 15px; }
+
+        .controls-card, .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-blue);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .inputs-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+
+        .input-group { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 6px; }
+        .input-group label { font-weight: 700; font-size: 1rem; color: var(--neon-cyan); text-transform: uppercase; }
+
+        .api-input-container { display: flex; gap: 6px; width: 100%; align-items: center; }
+
+        input[type="password"] {
+            flex-grow: 1; height: 48px; padding: 0 12px; border-radius: 6px;
+            border: 2px solid var(--neon-blue); background: #0b0c10; color: #fff;
+            font-family: 'Fira Code', monospace; font-size: 1rem; min-width: 0;
+        }
+
+        input[type="password"]:focus { outline: none; border-color: var(--neon-cyan); }
+        input[type="password"]:disabled { background: rgba(74, 222, 128, 0.1); border-color: var(--success); color: var(--success); }
+
+        .btn-container { display: flex; width: 100%; }
+        @media (min-width: 768px) { .btn-container { width: auto; } }
+
+        button {
+            padding: 14px 20px; font-size: 1.1rem; font-family: 'Rajdhani', sans-serif;
+            font-weight: 700; text-transform: uppercase; color: #0b0c10; background: var(--neon-cyan);
+            border: none; border-radius: 6px; cursor: pointer; width: 100%;
+        }
+        @media (min-width: 768px) { button { width: auto; } }
+        button:disabled { background: var(--text-muted); cursor: not-allowed; }
+
+        .api-btn {
+            width: 48px !important; height: 48px !important; min-width: 48px !important;
+            padding: 0 !important; display: flex !important; align-items: center !important;
+            justify-content: center !important; flex-shrink: 0 !important; border-radius: 6px !important; font-size: 1.2rem;
+        }
+
+        #saveApiBtn { background: var(--neon-blue); color: #fff; }
+        #clearApiBtn { background: var(--danger); color: #fff; }
+        #downloadBtn { background: var(--neon-purple); color: #fff; margin-top: 15px; display: none; }
+
+        .status-indicator {
+            display: none; color: var(--neon-pink); font-weight: 700; font-size: 1.1rem;
+            width: 100%; text-align: center; margin-top: 10px;
+        }
+
+        .editor-grid { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; }
+        @media (min-width: 900px) { .editor-grid { grid-template-columns: 1fr 1fr; } }
+
+        .panel { display: flex; flex-direction: column; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 2px solid var(--neon-blue); padding-bottom: 8px; }
+        .panel-title { font-weight: 700; font-size: 1.2rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        .badge { background: var(--neon-blue); color: #0b0c10; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 700; }
+
+        .upload-area {
+            position: relative; flex-grow: 1; border: 2px dashed var(--neon-blue); border-radius: 6px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(11, 12, 16, 0.7); min-height: 200px; text-align: center; padding: 15px;
+        }
+
+        .upload-area input[type="file"] {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer; z-index: 10; -webkit-tap-highlight-color: transparent;
+        }
+
+        .upload-icon { font-size: 3rem; margin-bottom: 10px; }
+        .upload-text { font-size: 1.1rem; pointer-events: none; word-break: break-all; }
+
+        textarea {
+            width: 100%; flex-grow: 1; min-height: 200px; background: #0b0c10; color: var(--neon-cyan);
+            border: 1px solid var(--neon-blue); border-radius: 6px; padding: 12px; font-family: 'Fira Code', monospace;
+            font-size: 13px; resize: none; line-height: 1.4;
+        }
+        textarea:focus { outline: none; border-color: var(--neon-cyan); }
+    </style>
 </head>
-<body style="font-family: sans-serif; padding: 20px;">
+<body>
 
-    <h2>Modo de Prueba (Sin estilos)</h2>
-    
-    <p><b>1. Pon tu API Key:</b></p>
-    <input type="text" id="api" placeholder="API Key..." style="width: 100%; padding: 10px;">
+    <header>
+        <h1>[ FNF Converter ]</h1>
+        <p class="subtitle">PSYCH ENGINE TO V-SLICE // HXC GENERATOR</p>
+    </header>
 
-    <p><b>2. Sube tu .lua:</b></p>
-    <input type="file" id="archivo">
+    <div class="container">
+        <div class="controls-card">
+            <div class="inputs-row">
+                <div class="input-group">
+                    <label for="apiKey">API Key (Gemini Core)</label>
+                    <div class="api-input-container">
+                        <input type="password" id="apiKey" placeholder="> Pega tu API Key aquí">
+                        <button id="saveApiBtn" class="api-btn" onclick="guardarApiKey()" title="Guardar API Key">💾</button>
+                        <button id="clearApiBtn" class="api-btn" onclick="quitarApiKey()" title="Borrar API Key">🗑️</button>
+                    </div>
+                </div>
+                <div class="btn-container">
+                    <button id="convertBtn" onclick="procesarArchivo()">Generar código .hxc 🚀</button>
+                </div>
+            </div>
+            <div class="status-indicator" id="statusIndicator">Cargando... 🧠</div>
+        </div>
 
-    <br><br>
-    <button onclick="convertir()" style="padding: 15px; width: 100%; font-size: 18px;">CONVERTIR</button>
+        <div class="editor-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">📂 Psych Engine</span>
+                    <span class="badge">SUBIR .LUA</span>
+                </div>
+                <div class="upload-area" id="dropZone">
+                    <input type="file" id="fileInput" accept="*/*">
+                    <div class="upload-icon" id="uploadIcon">📄</div>
+                    <div class="upload-text" id="uploadText">
+                        <strong>Toca aquí para seleccionar archivo</strong>
+                    </div>
+                </div>
+            </div>
 
-    <p id="estado" style="font-weight: bold; color: blue;">Esperando...</p>
-
-    <textarea id="salida" rows="15" style="width: 100%;" readonly></textarea>
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">💾 V-Slice Engine</span>
+                    <span class="badge">SALIDA .HXC</span>
+                </div>
+                <textarea id="outputHxc" readonly>// > Esperando input del usuario...</textarea>
+                <button id="downloadBtn" onclick="descargarHxc()">💾 Descargar Archivo</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        async function convertir() {
-            var api = document.getElementById('api').value.trim();
-            var archivoInput = document.getElementById('archivo');
-            var estado = document.getElementById('estado');
-            var salida = document.getElementById('salida');
+        document.addEventListener("DOMContentLoaded", function() {
+            var savedKey = localStorage.getItem('fnf_gemini_api_key');
+            var apiInput = document.getElementById('apiKey');
+            if (savedKey) {
+                apiInput.value = savedKey;
+                apiInput.disabled = true;
+                apiInput.placeholder = "> API KEY GUARDADA Y SEGURA";
+            }
+        });
 
-            if (!api) { alert("Falta la API Key"); return; }
-            if (!archivoInput.files || archivoInput.files.length === 0) { alert("Sube un archivo primero"); return; }
+        function guardarApiKey() {
+            var apiInput = document.getElementById('apiKey');
+            var apiKey = apiInput.value.trim();
+            if (apiKey !== "") {
+                localStorage.setItem('fnf_gemini_api_key', apiKey);
+                apiInput.disabled = true;
+                alert("💾 ¡API Key guardada y bloqueada con éxito!");
+            } else {
+                alert("⚠ ERROR: Ingresa una API Key antes de intentar guardarla.");
+            }
+        }
 
-            estado.innerText = "Leyendo archivo...";
-            estado.style.color = "orange";
+        function quitarApiKey() {
+            var apiInput = document.getElementById('apiKey');
+            apiInput.value = '';
+            apiInput.disabled = false;
+            apiInput.placeholder = "> Pega tu API Key aquí";
+            localStorage.removeItem('fnf_gemini_api_key');
+            alert("🗑️ API Key eliminada. Ya puedes escribir una nueva.");
+        }
+
+        var V_SLICE_DOCS = "DOCUMENTACIÓN SCRIPTING V-SLICE (HSCRIPT)\n" +
+        "1. Sintaxis Haxe. Usa llaves {} y punto y coma (;).\n" +
+        "2. Clases: import funkin.play.PlayState; import flixel.FlxG; import flixel.FlxSprite; import funkin.paths.Paths;\n" +
+        "3. onCreate() -> override function onCreate(event:ScriptEvent) { super.onCreate(event); }\n" +
+        "4. onUpdate(elapsed) -> override function onUpdate(event:UpdateScriptEvent) { super.onUpdate(event); var elapsed = event.elapsed; }\n" +
+        "5. getProperty('x') -> PlayState.instance.x\n" +
+        "6. setProperty('camera.zoom', 1.2) -> FlxG.camera.zoom = 1.2;\n" +
+        "7. playSound('s') -> FlxG.sound.play(Paths.sound('s'));";
+
+        var fileInput = document.getElementById('fileInput');
+        var uploadText = document.getElementById('uploadText');
+        var uploadIcon = document.getElementById('uploadIcon');
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                uploadIcon.textContent = "✅";
+                uploadText.innerHTML = "<strong>ARCHIVO CARGADO:</strong><br><span style='color: var(--success); font-family: monospace; font-size: 1.2rem;'>" + this.files[0].name + "</span>";
+            } else {
+                uploadIcon.textContent = "📄";
+                uploadText.innerHTML = "<strong>Toca aquí para seleccionar archivo</strong>";
+            }
+        });
+
+        async function procesarArchivo() {
+            var apiKey = document.getElementById('apiKey').value.trim();
+            var btn = document.getElementById('convertBtn');
+            var statusIndicator = document.getElementById('statusIndicator');
+            var outputHxc = document.getElementById('outputHxc');
+            var downloadBtn = document.getElementById('downloadBtn');
+
+            if (!apiKey) {
+                alert("⚠ ERROR: Falta API Key. Ingrésala para continuar.");
+                return;
+            }
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("⚠ ERROR: No has seleccionado ningún archivo.");
+                return;
+            }
+
+            var file = fileInput.files[0];
+            var reader = new FileReader();
+
+            reader.onload = async function(e) {
+                var inputLua = e.target.result;
+                
+                btn.disabled = true;
+                btn.innerHTML = "PROCESANDO... ⚙️";
+                statusIndicator.style.display = "block";
+                statusIndicator.style.color = "var(--neon-pink)";
+                statusIndicator.textContent = "> CONVIRTIENDO EN LA NUBE...";
+                outputHxc.value = "// > Generando código Haxe...\n// > Por favor, espera.";
+                downloadBtn.style.display = "none";
+
+                var prompt = "Convierte el siguiente script LUA a HScript (.hxc) para V-Slice. Usa esta doc: \n" + V_SLICE_DOCS + "\nEnvuelve en: class SongScript extends funkin.play.song.SongScript { ... }\nDevuelve SOLO código, sin markdown de bloques.\nCÓDIGO:\n" + inputLua;
+
+                // AQUÍ ESTÁ EL ARREGLO: Cambié el modelo a gemini-2.5-flash
+                var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey;
+
+                try {
+                    var response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+
+                    var data = await response.json();
+
+                    if (response.ok) {
+                        var resultText = data.candidates[0].content.parts[0].text;
+                        resultText = resultText.replace(/```haxe/gi, "").replace(/```hxc/gi, "").replace(/```/g, "").trim();
+                        outputHxc.value = resultText;
+                        
+                        statusIndicator.textContent = "> COMPILACIÓN EXITOSA ✅";
+                        statusIndicator.style.color = "var(--success)";
+                        downloadBtn.style.display = "block"; 
+                    } else {
+                        outputHxc.value = "// ⚠ ERROR DE API:\n// " + data.error.message;
+                        statusIndicator.textContent = "> ERROR AL CONVERTIR ❌";
+                        statusIndicator.style.color = "var(--danger)";
+                    }
+                } catch (error) {
+                    outputHxc.value = "// ⚠ ERROR DE RED:\n// " + error.message;
+                    statusIndicator.textContent = "> FALLO DE CONEXIÓN ❌";
+                    statusIndicator.style.color = "var(--danger)";
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = "Generar código .hxc 🚀";
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        function descargarHxc() {
+            var hxcContent = document.getElementById('outputHxc').value;
+            if (!hxcContent || hxcContent.includes("Esperando input") || hxcContent.includes("⚠ ERROR")) return;
+
+            var blob = new Blob([hxcContent], { type: 'text/plain' });
+            var url = URL.createObjectURL(blob);
+            
+            var newFileName = "script.hxc";
+            if (fileInput.files[0]) {
+                newFileName = fileInput.files[0].name.replace(/\.[^/.]+$/, "") + ".hxc";
+            }
+
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = newFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
 
             var reader = new FileReader();
             reader.onload = async function(e) {
